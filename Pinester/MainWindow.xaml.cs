@@ -11,14 +11,15 @@ using System.Windows.Shapes;
 
 namespace Pinester
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
+    public ICommand ImageTest { get; }
     public partial class MainWindow : Window
     {
         public MainWindow()
         {
             InitializeComponent();
+            ImageTest = new RelayCommand(Test);
+
+            DataContext = this;
         }
     }
 }
