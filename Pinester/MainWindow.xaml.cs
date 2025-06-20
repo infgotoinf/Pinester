@@ -1,25 +1,29 @@
-﻿using System.Text;
+﻿using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System.Windows.Media;
 
 namespace Pinester
 {
-    public ICommand ImageTest { get; }
     public partial class MainWindow : Window
     {
+        public ICommand ImageTest { get; }
         public MainWindow()
         {
             InitializeComponent();
-            ImageTest = new RelayCommand(Test);
+
+            ImageTest = new RelayCommand(ImageTesting);
 
             DataContext = this;
+        }
+
+        private void ImageTesting(object obj)
+        {
+            var brush = new ImageBrush();
+            brush.ImageSource = new BitmapImage(new Uri("Images/ContentImage.png", UriKind.Relative));
+            button1.Background = brush;
         }
     }
 }
