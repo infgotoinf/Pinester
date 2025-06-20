@@ -6,23 +6,10 @@
         xmlns:local="clr-namespace:Pinester"
         mc:Ignorable="d"
         Title="MainWindow" Height="440" Width="790">
-    <Grid Width="790" Height="440" Margin="0,0,0,-16">
+    <Grid Width="790" Height="440" Margin="0,0,0,-10">
 
-        <Button x:Name="img1" Command="{Binding ImageTesting}" HorizontalAlignment="Center" Margin="0,10,0,317" Width="200">
-            <Button.Background>
-                <ImageBrush ImageSource="/Resourses/795a0207-3b22-4860-8f76-656fe57ac788.png"/>
-            </Button.Background>
-        </Button>
-        <Button x:Name="img2" Command="{Binding ImageTesting}" HorizontalAlignment="Center" Margin="-420,10,0,317" Width="200">
-            <Button.Background>
-                <ImageBrush ImageSource="/Resourses/795a0207-3b22-4860-8f76-656fe57ac788.png"/>
-            </Button.Background>
-        </Button>
-        <Button x:Name="img3" Command="{Binding ImageTesting}" HorizontalAlignment="Center" Margin="420,10,0,317" Width="200">
-            <Button.Background>
-                <ImageBrush ImageSource="/Resourses/795a0207-3b22-4860-8f76-656fe57ac788.png"/>
-            </Button.Background>
-        </Button>
+
+        <Image HorizontalAlignment="Left" Height="100" Margin="143,200,0,0" VerticalAlignment="Top" Width="200" Source="/Resourses/795a0207-3b22-4860-8f76-656fe57ac788.png" MouseDown="aPicture_MouseDown"/>
 
     </Grid>
 </Window>

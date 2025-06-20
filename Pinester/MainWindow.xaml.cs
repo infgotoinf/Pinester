@@ -22,8 +22,12 @@ namespace Pinester
         private void ImageTesting(object obj)
         {
             var brush = new ImageBrush();
-            brush.ImageSource = new BitmapImage(new Uri("Images/ContentImage.png", UriKind.Relative));
-            button1.Background = brush;
+            brush.ImageSource = new BitmapImage(new Uri("Resourses/images.png", UriKind.Relative));
+        }
+
+        private void aPicture_MouseDown(object sender, MouseEventArgs e)
+        {
+            e.Source = new BitmapImage(new Uri(@"/Resourses/images.png", UriKind.Relative));
         }
     }
 }
