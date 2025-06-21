@@ -32,4 +32,14 @@
     <Resource Include="Resourses\images.png" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ViewModels\" />
+    <Folder Include="Views\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ksemenenko.ColorThief" Version="1.1.1.4" />
+    <PackageReference Include="System.Drawing.Common" Version="9.0.6" />
+  </ItemGroup>
+
 </Project>
