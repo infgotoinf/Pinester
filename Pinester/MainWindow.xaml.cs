@@ -1,33 +1,56 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using System.Windows.Media;
 
 namespace Pinester
 {
     public partial class MainWindow : Window
     {
-        public ICommand ImageTest { get; }
+        public ICommand ImageTest => new RelayCommand(_ => AddPinterestImage());
+        public ObservableCollection<BitmapImage> ImageCollection { get; } = new ObservableCollection<BitmapImage>();
+        private bool switcher = true;
+
         public MainWindow()
         {
             InitializeComponent();
-
-            ImageTest = new RelayCommand(ImageTesting);
-
             DataContext = this;
+            ImageContainer.ItemsSource = ImageCollection; // Connect to collection
         }
 
-        private void ImageTesting(object obj)
+        private void AddPinterestImage()
         {
-            var brush = new ImageBrush();
-            brush.ImageSource = new BitmapImage(new Uri("Resourses/images.png", UriKind.Relative));
+            try
+            {
+                // Create image source
+                BitmapImage bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                string imagePath = switcher
+            ? "pack://application:,,,/Resourses/images.png"
+            : "pack://application:,,,/Resourses/images (1).png";
+
+                bitmap.UriSource = new Uri(imagePath, UriKind.Absolute);
+
+                // Enable variable height sizing
+                bitmap.DecodePixelWidth = 180; // Fixed width
+                bitmap.CacheOption = BitmapCacheOption.OnLoad; // Prevents locking files
+                bitmap.EndInit();
+                bitmap.Freeze(); // Makes thread-safe
+
+                // Add to collection (will automatically appear in UI)
+                ImageCollection.Add(bitmap);
+
+                switcher = !switcher;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading image: {ex.Message}");
+            }
         }
 
-        private void aPicture_MouseDown(object sender, MouseEventArgs e)
+        private void aPicture_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            e.Source = new BitmapImage(new Uri(@"/Resourses/images.png", UriKind.Relative));
         }
     }
 }

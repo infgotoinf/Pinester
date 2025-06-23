@@ -5,11 +5,39 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Pinester"
         mc:Ignorable="d"
-        Title="MainWindow" Height="440" Width="790">
-    <Grid Width="790" Height="440" Margin="0,0,0,-10">
+        Title="Pinester" Height="440" Width="790">
 
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-        <Image HorizontalAlignment="Left" Height="100" Margin="143,200,0,0" VerticalAlignment="Top" Width="200" Source="/Resourses/795a0207-3b22-4860-8f76-656fe57ac788.png" MouseDown="aPicture_MouseDown"/>
+        <!-- Button at top -->
+        <Button Grid.Row="0" Content="Add Image" HorizontalAlignment="Left" 
+                Command="{Binding ImageTest}" Margin="10" 
+                VerticalAlignment="Center" Height="36" Width="111"/>
 
+        <!-- Pinterest-style masonry grid -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <ItemsControl x:Name="ImageContainer">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Margin="10" Width="180">
+                            <Image Source="{Binding}" 
+                                   Stretch="UniformToFill"
+                                   VerticalAlignment="Top"
+                                   HorizontalAlignment="Center"/>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
     </Grid>
 </Window>
