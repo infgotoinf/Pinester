@@ -9,6 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Npgsql" Version="9.0.3" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+    
     <None Remove="Resourses\5269239498947029809.jpg" />
     <None Remove="Resourses\5269239498947029815.jpg" />
     <None Remove="Resourses\795a0207-3b22-4860-8f76-656fe57ac788.png" />
@@ -18,18 +21,6 @@
     <None Remove="Resourses\flat,750x,075,f-pad,750x1000,f8f8f8.jpg" />
     <None Remove="Resourses\images %281%29.png" />
     <None Remove="Resourses\images.png" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Resource Include="Resourses\5269239498947029809.jpg" />
-    <Resource Include="Resourses\5269239498947029815.jpg" />
-    <Resource Include="Resourses\795a0207-3b22-4860-8f76-656fe57ac788.png" />
-    <Resource Include="Resourses\ae496ed585e29be3b028748d71686594.jpg" />
-    <Resource Include="Resourses\b9f9b3c4a29487587fd3ef3b958085fe.jpg" />
-    <Resource Include="Resourses\flat,750x,075,f-pad,750x1000,f8f8f8 (1).jpg" />
-    <Resource Include="Resourses\flat,750x,075,f-pad,750x1000,f8f8f8.jpg" />
-    <Resource Include="Resourses\images (1).png" />
-    <Resource Include="Resourses\images.png" />
   </ItemGroup>
 
 </Project>
