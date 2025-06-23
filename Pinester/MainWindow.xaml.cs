@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
@@ -8,49 +9,41 @@ namespace Pinester
 {
     public partial class MainWindow : Window
     {
+        private static string resourses_directory = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + "\\Resources\\";
+        private Random rand = new Random();
+        private string[] files = Directory.GetFiles(resourses_directory);
         public ICommand ImageTest => new RelayCommand(_ => AddPinterestImage());
         public ObservableCollection<BitmapImage> ImageCollection { get; } = new ObservableCollection<BitmapImage>();
-        private bool switcher = true;
 
         public MainWindow()
         {
             InitializeComponent();
             DataContext = this;
-            ImageContainer.ItemsSource = ImageCollection; // Connect to collection
+            ImageContainer.ItemsSource = ImageCollection;
         }
 
+        private string imagePath;
         private void AddPinterestImage()
         {
-            try
-            {
-                // Create image source
-                BitmapImage bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                string imagePath = switcher
-            ? "pack://application:,,,/Resourses/images.png"
-            : "pack://application:,,,/Resourses/images (1).png";
+            // Create image source
+            var bitmap = new BitmapImage();
+            bitmap.BeginInit();
 
-                bitmap.UriSource = new Uri(imagePath, UriKind.Absolute);
+            // Use absolute path - replace with your actual image paths
+            string imagePath = files[rand.Next(files.Length)];
 
-                // Enable variable height sizing
-                bitmap.DecodePixelWidth = 180; // Fixed width
-                bitmap.CacheOption = BitmapCacheOption.OnLoad; // Prevents locking files
-                bitmap.EndInit();
-                bitmap.Freeze(); // Makes thread-safe
+            bitmap.UriSource = new Uri(imagePath, UriKind.Absolute);
+            bitmap.DecodePixelWidth = 180;
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+            bitmap.EndInit();
+            bitmap.Freeze();
 
-                // Add to collection (will automatically appear in UI)
-                ImageCollection.Add(bitmap);
-
-                switcher = !switcher;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading image: {ex.Message}");
-            }
+            ImageCollection.Add(bitmap);
         }
 
         private void aPicture_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            // Your existing mouse down handler
         }
     }
 }

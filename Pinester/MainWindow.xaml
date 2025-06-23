@@ -12,24 +12,25 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-
-        <!-- Button at top -->
+        
+        <!-- Add Image Button -->
         <Button Grid.Row="0" Content="Add Image" HorizontalAlignment="Left" 
                 Command="{Binding ImageTest}" Margin="10" 
                 VerticalAlignment="Center" Height="36" Width="111"/>
-
-        <!-- Pinterest-style masonry grid -->
+        
+        <!-- Pinterest-style Layout -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <ItemsControl x:Name="ImageContainer">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal" />
+                        <WrapPanel Orientation="Horizontal" 
+                                   Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
-
+                
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Margin="10" Width="180">
+                        <Border Margin="10" Width="180" HorizontalAlignment="Left">
                             <Image Source="{Binding}" 
                                    Stretch="UniformToFill"
                                    VerticalAlignment="Top"
