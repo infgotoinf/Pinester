@@ -16,3 +16,4 @@ namespace Pinester.DataBase
         public BitmapImage ImageSource { get; set; } // Готовый BitmapImage для отображения в UI
     }
 }
+
