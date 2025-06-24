@@ -13,10 +13,16 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         
-        <!-- Add Image Button -->
-        <Button Grid.Row="0" Content="Add Image" HorizontalAlignment="Left" 
-                Command="{Binding ImageTest}" Margin="10" 
-                VerticalAlignment="Center" Height="36" Width="111"/>
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <!-- Add Image Button -->
+            <Button Content="Add Image" HorizontalAlignment="Left" 
+                    Command="{Binding ImageTest}" Margin="10" 
+                    VerticalAlignment="Center" Height="36" Width="111"/>
+            <!-- Upload Image Button -->
+            <Button Content="Upload Image" HorizontalAlignment="Left" 
+                    Command="{Binding UploadImageCommand}" Margin="5,10,10,10" 
+                    VerticalAlignment="Center" Height="36" Width="111"/>
+        </StackPanel>
         
         <!-- Pinterest-style Layout -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
