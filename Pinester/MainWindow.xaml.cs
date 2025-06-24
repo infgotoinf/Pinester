@@ -6,15 +6,16 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Microsoft.Win32;
+using Pinester.DataBase;
 
 namespace Pinester
 {
     public partial class MainWindow : Window
     {
-        private static string resourses_directory = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + "\\Resources\\";
-        private Random rand = new Random();
-        private string[] files = Directory.GetFiles(resourses_directory);
+        private readonly Random rand = new Random();
         public ICommand ImageTest => new RelayCommand(_ => AddPinterestImage());
+        public ICommand UploadImageCommand => new RelayCommand(_ => UploadImage());
         public ObservableCollection<BitmapImage> ImageCollection { get; } = new ObservableCollection<BitmapImage>();
 
         public MainWindow()
@@ -24,23 +25,54 @@ namespace Pinester
             ImageContainer.ItemsSource = ImageCollection;
         }
 
-        private string imagePath;
+        private void UploadImage()
+        {
+            var openFileDialog = new OpenFileDialog
+            {
+                Filter = "Image files (*.png;*.jpeg;*.jpg)|*.png;*.jpeg;*.jpg|All files (*.*)|*.*"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    string filePath = openFileDialog.FileName;
+                    byte[] imageData = File.ReadAllBytes(filePath);
+                    string fileName = Path.GetFileName(filePath);
+
+                    var dbService = new DatabaseService();
+                    dbService.InsertImage(fileName, imageData);
+
+                    MessageBox.Show("Image uploaded successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error uploading image: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
         private void AddPinterestImage()
         {
-            // Create image source
-            var bitmap = new BitmapImage();
-            bitmap.BeginInit();
+            var dbService = new DatabaseService();
+            var allImages = dbService.GetAllImages();
 
-            // Use absolute path - replace with your actual image paths
-            string imagePath = files[rand.Next(files.Length)];
-
-            bitmap.UriSource = new Uri(imagePath, UriKind.Absolute);
-            bitmap.DecodePixelWidth = 180;
-            bitmap.CacheOption = BitmapCacheOption.OnLoad;
-            bitmap.EndInit();
-            bitmap.Freeze();
-
-            ImageCollection.Add(bitmap);
+            if (allImages != null && allImages.Count > 0)
+            {
+                var randomImageInfo = allImages[rand.Next(allImages.Count)];
+                if (randomImageInfo.ImageSource != null)
+                {
+                    ImageCollection.Add(randomImageInfo.ImageSource);
+                }
+                else
+                {
+                    MessageBox.Show("Selected image from database has no visual content.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            else
+            {
+                MessageBox.Show("No images found in the database.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
 
         private void Image_Loaded(object sender, RoutedEventArgs e)

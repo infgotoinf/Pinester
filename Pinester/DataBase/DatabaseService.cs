@@ -13,18 +13,18 @@ namespace Pinester.DataBase
 {
     public class DatabaseService
     {
-        private readonly string _connectionString;
+        private readonly string _connectionString = "Host=localhost;Username=postgres;Password=1234;Database=pinester";
 
-        public DatabaseService()
-        {
-            if (string.IsNullOrEmpty(_connectionString))
-            {
-                // Запасной вариант или ошибка, если строка подключения не найдена
-                // Для простоты примера, используем жестко заданную строку, но это плохая практика для реальных приложений
-                _connectionString = "Host=localhost;Username=postgres;Password=1234;Database=pinester";
-                MessageBox.Show("Connection string not found in App.config. Using default (edit DatabaseService.cs).", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
+        //public DatabaseService()
+        //{
+        //    if (string.IsNullOrEmpty(_connectionString))
+        //    {
+        //        // Запасной вариант или ошибка, если строка подключения не найдена
+        //        // Для простоты примера, используем жестко заданную строку, но это плохая практика для реальных приложений
+        //        _connectionString = "Host=localhost;Username=postgres;Password=1234;Database=pinester";
+        //        MessageBox.Show("Connection string not found in App.config. Using default (edit DatabaseService.cs).", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+        //    }
+        //}
 
         /// <summary>
         /// Загружает все изображения из базы данных, включая их бинарные данные,
@@ -81,6 +81,27 @@ namespace Pinester.DataBase
             {
                 MessageBox.Show($"Error loading images from database: {ex.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null; // или throw; или вернуть пустой список в зависимости от стратегии обработки ошибок
+            }
+        }
+
+        public void InsertImage(string fileName, byte[] imageData)
+        {
+            try
+            {
+                using (var conn = new NpgsqlConnection(_connectionString))
+                {
+                    conn.Open();
+                    using (var cmd = new NpgsqlCommand("INSERT INTO images (file_name, image_data) VALUES (@file_name, @image_data)", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@file_name", fileName);
+                        cmd.Parameters.AddWithValue("@image_data", imageData);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error inserting image into database: {ex.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
