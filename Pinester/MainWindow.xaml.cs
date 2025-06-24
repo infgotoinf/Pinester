@@ -2,7 +2,9 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace Pinester
@@ -41,9 +43,23 @@ namespace Pinester
             ImageCollection.Add(bitmap);
         }
 
-        private void aPicture_MouseDown(object sender, MouseButtonEventArgs e)
+        private void Image_Loaded(object sender, RoutedEventArgs e)
         {
-            // Your existing mouse down handler
+            if (sender is Image image && image.Parent is Grid parentGrid)
+            {
+                // Get current width from parent container
+                double currentWidth = parentGrid.ActualWidth;
+
+                // Create new clip matching current width
+                var clip = new RectangleGeometry
+                {
+                    RadiusX = 10,
+                    RadiusY = 10,
+                    Rect = new Rect(0, 0, currentWidth, image.ActualHeight)
+                };
+                clip.Freeze();
+                image.Clip = clip;
+            }
         }
     }
 }

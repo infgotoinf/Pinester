@@ -5,40 +5,135 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Pinester"
         mc:Ignorable="d"
-        Title="Pinester" Height="440" Width="790">
+        Title="Pinester" Height="600" Width="1040">
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        
-        <!-- Add Image Button -->
-        <Button Grid.Row="0" Content="Add Image" HorizontalAlignment="Left" 
-                Command="{Binding ImageTest}" Margin="10" 
-                VerticalAlignment="Center" Height="36" Width="111"/>
-        
-        <!-- Pinterest-style Layout -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+    <Window.Resources>
+        <Style x:Key="NormButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="Black"/>
+            <Setter Property="FontFamily" Value="Fira Mono"/>
+            <Setter Property="Opacity" Value="0.25"/>
+            <Setter Property="Margin" Value="25"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="DarkSlateGray" 
+                                BorderThickness="0" 
+                                CornerRadius="10">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Opacity" Value="0.75"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+
+        <Style x:Key="NormScrollViewerStyle" TargetType="ScrollViewer">
+            <Setter Property="Background" Value="#404040"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollViewer">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderThickness="0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <ScrollContentPresenter Grid.Row="0" Grid.Column="0"/>
+
+                                <ScrollBar x:Name="PART_VerticalScrollBar"
+                                           Grid.Row="0" Grid.Column="1"
+                                           Value="{TemplateBinding VerticalOffset}"
+                                           Maximum="{TemplateBinding ScrollableHeight}"
+                                           ViewportSize="{TemplateBinding ViewportHeight}"
+                                           Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+
+        <Style TargetType="ScrollBar">
+            <Setter Property="Background" Value="Black"/>
+            <Setter Property="Opacity" Value="0.4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Border Background="Black">
+                            <Grid>
+                                <Track x:Name="PART_Track">
+                                    <Track.Thumb>
+                                        <Thumb Background="White" Opacity="0.5" BorderThickness="0"/>
+                                    </Track.Thumb>
+                                </Track>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Background="#FF313131">
+        <ScrollViewer Style="{StaticResource NormScrollViewerStyle}"
+                      Margin="10">
             <ItemsControl x:Name="ImageContainer">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal" 
-                                   Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"/>
+                        <local:MasonryPanel ColumnWidth="185"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
-                
+
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Margin="10" Width="180" HorizontalAlignment="Left">
-                            <Image Source="{Binding}" 
-                                   Stretch="UniformToFill"
-                                   VerticalAlignment="Top"
-                                   HorizontalAlignment="Center"/>
+                        <Border Margin="0, 5, 0, 0" Width="180" CornerRadius="10" ClipToBounds="True">
+                            <Grid>
+                                <!-- Background for rounded corners -->
+                                <Border Background="#404040" CornerRadius="10"/>
+
+                                <!-- Image with dynamic clipping -->
+                                <Image x:Name="PinterestImage" 
+                       Source="{Binding}" 
+                       Stretch="UniformToFill"
+                       VerticalAlignment="Top"
+                       Loaded="Image_Loaded">
+                                    <Image.Clip>
+                                        <RectangleGeometry x:Name="ImageClip" RadiusX="10" RadiusY="10"/>
+                                    </Image.Clip>
+                                </Image>
+                            </Grid>
                         </Border>
-                    </DataTemplate>
+                        </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
+        
+        <Button Content="Add Image" Style="{StaticResource NormButtonStyle}"
+                Command="{Binding ImageTest}" 
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Height="36" Width="111"/>
+
+    <Rectangle Stroke="#FF313131" StrokeThickness="50" RadiusX="50" RadiusY="50" Margin="-40,-40,-178,-40"/>
     </Grid>
 </Window>
