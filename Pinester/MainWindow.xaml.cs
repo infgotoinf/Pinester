@@ -13,9 +13,8 @@ namespace Pinester
 {
     public partial class MainWindow : Window
     {
-        private readonly Random rand = new Random();
-        public ICommand ImageTest => new RelayCommand(_ => AddPinterestImage());
         public ICommand UploadImageCommand => new RelayCommand(_ => UploadImage());
+        public ICommand LoadImagesCommand => new RelayCommand(_ => LoadImages());
         public ObservableCollection<BitmapImage> ImageCollection { get; } = new ObservableCollection<BitmapImage>();
 
         public MainWindow()
@@ -43,7 +42,7 @@ namespace Pinester
                     var dbService = new DatabaseService();
                     dbService.InsertImage(fileName, imageData);
 
-                    MessageBox.Show("Image uploaded successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ImageCollection.Add(new BitmapImage(new Uri(filePath)));
                 }
                 catch (Exception ex)
                 {
@@ -52,26 +51,14 @@ namespace Pinester
             }
         }
 
-        private void AddPinterestImage()
+        private void LoadImages()
         {
             var dbService = new DatabaseService();
             var allImages = dbService.GetAllImages();
 
-            if (allImages != null && allImages.Count > 0)
+            foreach (var image in allImages)
             {
-                var randomImageInfo = allImages[rand.Next(allImages.Count)];
-                if (randomImageInfo.ImageSource != null)
-                {
-                    ImageCollection.Add(randomImageInfo.ImageSource);
-                }
-                else
-                {
-                    MessageBox.Show("Selected image from database has no visual content.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-            }
-            else
-            {
-                MessageBox.Show("No images found in the database.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                ImageCollection.Add(image.ImageSource);
             }
         }
 
