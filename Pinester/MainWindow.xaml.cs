@@ -80,5 +80,10 @@ namespace Pinester
                 image.Clip = clip;
             }
         }
+
+        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            
+        }
     }
 }

@@ -239,6 +239,17 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+            <Style.Triggers>
+                <Trigger Property="Rectangle.IsMouseOver" Value="true">
+                    <Setter Property="Opacity" Value="0.5" />
+                </Trigger>
+                <Trigger Property="Rectangle.IsMouseOver" Value="false">
+                    <Setter Property="Opacity" Value="0.25" />
+                </Trigger>
+                <Trigger Property="IsPressed" Value="true">
+                    <Setter Property="Opacity" Value="0.75" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <Style x:Key="SliderRepeatButton1" TargetType="RepeatButton">
@@ -251,6 +262,17 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+            <Style.Triggers>
+                <Trigger Property="Rectangle.IsMouseOver" Value="true">
+                    <Setter Property="Opacity" Value="0.5" />
+                </Trigger>
+                <Trigger Property="Rectangle.IsMouseOver" Value="false">
+                    <Setter Property="Opacity" Value="0.25" />
+                </Trigger>
+                <Trigger Property="IsPressed" Value="true">
+                    <Setter Property="Opacity" Value="0.75" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <Style x:Key="SliderThumb" TargetType="Thumb">
@@ -259,10 +281,21 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Thumb">
-                        <Rectangle Height="20" Opacity="0.25" Width="10" Fill="White"/>
+                        <Rectangle Height="20" Opacity="1" Width="10" Fill="White" x:Name="SlThumb"/>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+            <Style.Triggers>
+                <Trigger Property="Rectangle.IsMouseOver" Value="true">
+                    <Setter Property="Opacity" Value="0.5" />
+                </Trigger>
+                <Trigger Property="Rectangle.IsMouseOver" Value="false">
+                    <Setter Property="Opacity" Value="0.25" />
+                </Trigger>
+                <Trigger Property="IsDragging" Value="true">
+                    <Setter Property="Opacity" Value="0.75" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <ControlTemplate x:Key="Slider"  TargetType="Slider">
@@ -348,11 +381,11 @@
             VerticalAlignment="Top"
             Height="36" Width="110" Margin="25, 80, 0, 0"/>
 
-        <Slider Width="702" Height="18" HorizontalAlignment="Left" Style="{StaticResource Horizontal_Slider}"
-        VerticalAlignment="Top" Margin="285,34,0,0" Background="Transparent" BorderBrush="Transparent"/>
+        <Slider Width="800" Height="18" HorizontalAlignment="Stretch" Style="{StaticResource Horizontal_Slider}"
+        VerticalAlignment="Top" Margin="285,34,50,0" Background="Transparent" BorderBrush="Transparent" Minimum="1" Value="5" Maximum="9" ValueChanged="Slider_ValueChanged" />
 
         <ComboBox HorizontalAlignment="Left" VerticalAlignment="Top" Height="36" Width="110" Margin="155, 25, 0, 0">
-            <ComboBoxItem Content="Name"></ComboBoxItem>
+            <ComboBoxItem Content="Date"></ComboBoxItem>
             <ComboBoxItem Content="Date"></ComboBoxItem>
             <ComboBoxItem Content="Coffie"></ComboBoxItem>
         </ComboBox>
