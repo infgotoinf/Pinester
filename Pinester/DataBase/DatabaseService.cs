@@ -1,12 +1,9 @@
-﻿using System;
+﻿using Npgsql;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Npgsql;
-using System.Configuration; // Для App.config
 using System.IO;
-using System.Windows; // Для MessageBox (можно заменить на логирование или проброс исключений)
+using System.Linq;
+using System.Windows;
 using System.Windows.Media.Imaging;
 using Pinester.Models;
 
@@ -15,37 +12,21 @@ namespace Pinester.DataBase
 {
     public class DatabaseService
     {
-        private readonly string _connectionString = "Host=localhost;Username=postgres;Password=1234;Database=pinester";
-
-        //public DatabaseService()
-        //{
-        //    if (string.IsNullOrEmpty(_connectionString))
-        //    {
-        //        // Запасной вариант или ошибка, если строка подключения не найдена
-        //        // Для простоты примера, используем жестко заданную строку, но это плохая практика для реальных приложений
-        //        _connectionString = "Host=localhost;Username=postgres;Password=1234;Database=pinester";
-        //        MessageBox.Show("Connection string not found in App.config. Using default (edit DatabaseService.cs).", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-        //    }
-        //}
+        private readonly string _connectionString = "Host=localhost;Username=postgres;Password=zxc;Database=postgres";
 
         /// <summary>
-        /// Загружает все изображения из базы данных, включая их бинарные данные,
-        /// и создает для каждого BitmapImage.
-        /// Каждому изображению присваивается AssignedName.
+        /// Загружает все изображения из базы данных.
         /// </summary>
-        /// <returns>Список объектов ImageInfo или null в случае ошибки.</returns>
         public List<ImageInfo> GetAllImages()
         {
             var images = new List<ImageInfo>();
-            int counter = 1; // Для присвоения AssignedName = "Image_X"
+            int counter = 1;
 
             try
             {
                 using (var conn = new NpgsqlConnection(_connectionString))
                 {
                     conn.Open();
-                    // Загружаем все необходимые поля, включая image_data
-                    // Сортируем по ID, чтобы AssignedName был консистентным
                     using (var cmd = new NpgsqlCommand("SELECT id, file_name, image_data FROM images ORDER BY id", conn))
                     using (var reader = cmd.ExecuteReader())
                     {
@@ -56,20 +37,19 @@ namespace Pinester.DataBase
                                 Id = reader.GetInt32(reader.GetOrdinal("id")),
                                 FileName = reader.GetString(reader.GetOrdinal("file_name")),
                                 ImageData = (byte[])reader.GetValue(reader.GetOrdinal("image_data")),
-                                AssignedName = $"Image_{counter++}" // Присваиваем имя
+                                AssignedName = $"Image_{counter++}"
                             };
 
-                            // Создаем BitmapImage из ImageData
                             if (imageInfo.ImageData != null && imageInfo.ImageData.Length > 0)
                             {
                                 BitmapImage bitmap = new BitmapImage();
                                 using (MemoryStream stream = new MemoryStream(imageInfo.ImageData))
                                 {
                                     bitmap.BeginInit();
-                                    bitmap.CacheOption = BitmapCacheOption.OnLoad; // Важно для освобождения потока
+                                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
                                     bitmap.StreamSource = stream;
                                     bitmap.EndInit();
-                                    bitmap.Freeze(); // Рекомендуется для BitmapImage, которые используются в коллекциях или из других потоков
+                                    bitmap.Freeze();
                                 }
                                 imageInfo.ImageSource = bitmap;
                             }
@@ -82,28 +62,60 @@ namespace Pinester.DataBase
             catch (Exception ex)
             {
                 MessageBox.Show($"Error loading images from database: {ex.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return null; // или throw; или вернуть пустой список в зависимости от стратегии обработки ошибок
+                return null;
             }
         }
 
+        /// <summary>
+        /// Вставляет одно изображение.
+        /// </summary>
         public void InsertImage(string fileName, byte[] imageData)
         {
-            try
+            InsertMultipleImages(new List<ImageInfo>
             {
-                using (var conn = new NpgsqlConnection(_connectionString))
+                new ImageInfo { FileName = fileName, ImageData = imageData }
+            });
+        }
+
+        /// <summary>
+        /// Вставляет несколько изображений в базу данных в одной транзакции.
+        /// </summary>
+        /// <param name="imagesToInsert">Коллекция объектов для вставки.</param>
+        public void InsertMultipleImages(IEnumerable<ImageInfo> imagesToInsert)
+        {
+            if (!imagesToInsert.Any())
+            {
+                return;
+            }
+
+            using (var conn = new NpgsqlConnection(_connectionString))
+            {
+                conn.Open();
+                using (var transaction = conn.BeginTransaction())
                 {
-                    conn.Open();
-                    using (var cmd = new NpgsqlCommand("INSERT INTO images (file_name, image_data) VALUES (@file_name, @image_data)", conn))
+                    try
                     {
-                        cmd.Parameters.AddWithValue("@file_name", fileName);
-                        cmd.Parameters.AddWithValue("@image_data", imageData);
-                        cmd.ExecuteNonQuery();
+                        using (var cmd = new NpgsqlCommand("INSERT INTO images (file_name, image_data) VALUES (@file_name, @image_data)", conn, transaction))
+                        {
+                            cmd.Parameters.Add("@file_name", NpgsqlTypes.NpgsqlDbType.Text);
+                            cmd.Parameters.Add("@image_data", NpgsqlTypes.NpgsqlDbType.Bytea);
+
+                            foreach (var image in imagesToInsert)
+                            {
+                                cmd.Parameters["@file_name"].Value = image.FileName;
+                                cmd.Parameters["@image_data"].Value = image.ImageData;
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+                        transaction.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        MessageBox.Show($"Error inserting multiple images: {ex.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        throw;
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error inserting image into database: {ex.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -132,3 +144,4 @@ namespace Pinester.DataBase
         }
     }
 }
+
