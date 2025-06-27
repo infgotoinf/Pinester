@@ -17,6 +17,9 @@ namespace Pinester
 
         public ICommand AddFilesCommand { get; }
         public ICommand AddFolderCommand { get; }
+        public ICommand UploadImageCommand => new RelayCommand(_ => UploadImage());
+        public ICommand LoadImagesCommand => new RelayCommand(_ => LoadImages());
+        public ObservableCollection<ImageInfo> ImageCollection { get; } = new ObservableCollection<ImageInfo>();
 
         public MainWindow()
         {
@@ -75,6 +78,21 @@ namespace Pinester
                         FileName = Path.GetFileName(filePath),
                         ImageData = File.ReadAllBytes(filePath)
                     });
+                    string filePath = openFileDialog.FileName;
+                    byte[] imageData = File.ReadAllBytes(filePath);
+                    string fileName = Path.GetFileName(filePath);
+
+                    var dbService = new DatabaseService();
+                    dbService.InsertImage(fileName, imageData);
+
+                    // Create ImageInfo object
+                    var imageInfo = new ImageInfo
+                    {
+                        FileName = fileName,
+                        ImageSource = new BitmapImage(new Uri(filePath))
+                    };
+
+                    ImageCollection.Add(imageInfo);
                 }
 
                 if (imageInfos.Any())
@@ -88,6 +106,7 @@ namespace Pinester
         /// Обработчик команды для добавления изображений из папки.
         /// </summary>
         private void ExecuteAddFolder(object parameter)
+        private void LoadImages()
         {
             // Используем современный диалог выбора папки
             var dialog = new CommonOpenFileDialog
@@ -129,6 +148,26 @@ namespace Pinester
         /// Общий метод для сохранения списка изображений в БД и обновления UI.
         /// </summary>
         private void SaveChangesToDb(List<ImageInfo> images)
+            if (allImages != null)
+            {
+                foreach (var image in allImages)
+                {
+                    ImageCollection.Add(image);
+                }
+            }
+        }
+
+        private void ImageBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is Border border && border.Tag is ImageInfo imageInfo)
+            {
+                var viewer = new ImageViewer(imageInfo.ImageSource, imageInfo.FileName);
+                viewer.Show();
+            }
+        }
+
+
+        private void Image_Loaded(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -142,6 +181,11 @@ namespace Pinester
             {
                 MessageBox.Show($"Произошла ошибка при сохранении изображений в базу данных: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            
         }
     }
 }
