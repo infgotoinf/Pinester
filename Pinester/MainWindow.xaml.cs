@@ -1,96 +1,146 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using Pinester.DataBase;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Windows;
+using System.Windows.Input;
 
 namespace Pinester
 {
     public partial class MainWindow : Window
     {
-        private readonly Random rand = new Random();
-        public ICommand ImageTest => new RelayCommand(_ => AddPinterestImage());
-        public ICommand UploadImageCommand => new RelayCommand(_ => UploadImage());
-        public ObservableCollection<BitmapImage> ImageCollection { get; } = new ObservableCollection<BitmapImage>();
+        private readonly DatabaseService _dbService;
+        private static readonly string[] ImageExtensions = { ".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tiff" };
+
+        public ICommand AddFilesCommand { get; }
+        public ICommand AddFolderCommand { get; }
 
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = this;
-            ImageContainer.ItemsSource = ImageCollection;
+            _dbService = new DatabaseService();
+
+            // Привязываем команды к методам-обработчикам
+            AddFilesCommand = new RelayCommand(ExecuteAddFiles);
+            AddFolderCommand = new RelayCommand(ExecuteAddFolder);
+
+            // Устанавливаем DataContext на само окно, чтобы XAML-привязки команд работали
+            this.DataContext = this;
+
+            // Загружаем изображения из БД при запуске приложения
+            LoadImagesFromDb();
         }
 
-        private void UploadImage()
+        /// <summary>
+        /// Загружает все изображения из базы данных и отображает их.
+        /// </summary>
+        private void LoadImagesFromDb()
+        {
+            try
+            {
+                var images = _dbService.GetAllImages();
+                if (images != null)
+                {
+                    ImageContainer.ItemsSource = images;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to load images: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// Обработчик команды для добавления нескольких файлов.
+        /// </summary>
+        private void ExecuteAddFiles(object parameter)
         {
             var openFileDialog = new OpenFileDialog
             {
-                Filter = "Image files (*.png;*.jpeg;*.jpg)|*.png;*.jpeg;*.jpg|All files (*.*)|*.*"
+                Title = "Выберите изображения",
+                Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.tiff|All files (*.*)|*.*",
+                Multiselect = true // Разрешаем выбор нескольких файлов
             };
 
             if (openFileDialog.ShowDialog() == true)
             {
-                try
+                var imageInfos = new List<ImageInfo>();
+                foreach (string filePath in openFileDialog.FileNames)
                 {
-                    string filePath = openFileDialog.FileName;
-                    byte[] imageData = File.ReadAllBytes(filePath);
-                    string fileName = Path.GetFileName(filePath);
-
-                    var dbService = new DatabaseService();
-                    dbService.InsertImage(fileName, imageData);
-
-                    MessageBox.Show("Image uploaded successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    imageInfos.Add(new ImageInfo
+                    {
+                        FileName = Path.GetFileName(filePath),
+                        ImageData = File.ReadAllBytes(filePath)
+                    });
                 }
-                catch (Exception ex)
+
+                if (imageInfos.Any())
                 {
-                    MessageBox.Show($"Error uploading image: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    SaveChangesToDb(imageInfos);
                 }
             }
         }
 
-        private void AddPinterestImage()
+        /// <summary>
+        /// Обработчик команды для добавления изображений из папки.
+        /// </summary>
+        private void ExecuteAddFolder(object parameter)
         {
-            var dbService = new DatabaseService();
-            var allImages = dbService.GetAllImages();
-
-            if (allImages != null && allImages.Count > 0)
+            // Используем современный диалог выбора папки
+            var dialog = new CommonOpenFileDialog
             {
-                var randomImageInfo = allImages[rand.Next(allImages.Count)];
-                if (randomImageInfo.ImageSource != null)
+                IsFolderPicker = true,
+                Title = "Выберите папку с изображениями"
+            };
+
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                var folderPath = dialog.FileName;
+
+                // Ищем все файлы в папке, которые являются изображениями
+                var filePaths = Directory.GetFiles(folderPath, "*.*", SearchOption.TopDirectoryOnly)
+                                         .Where(f => ImageExtensions.Contains(Path.GetExtension(f).ToLowerInvariant()));
+
+                var imageInfos = new List<ImageInfo>();
+                foreach (var filePath in filePaths)
                 {
-                    ImageCollection.Add(randomImageInfo.ImageSource);
+                    imageInfos.Add(new ImageInfo
+                    {
+                        FileName = Path.GetFileName(filePath),
+                        ImageData = File.ReadAllBytes(filePath)
+                    });
+                }
+
+                if (imageInfos.Any())
+                {
+                    SaveChangesToDb(imageInfos);
                 }
                 else
                 {
-                    MessageBox.Show("Selected image from database has no visual content.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("В выбранной папке не найдено подходящих изображений.", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
-            }
-            else
-            {
-                MessageBox.Show("No images found in the database.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
-        private void Image_Loaded(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Общий метод для сохранения списка изображений в БД и обновления UI.
+        /// </summary>
+        private void SaveChangesToDb(List<ImageInfo> images)
         {
-            if (sender is Image image && image.Parent is Grid parentGrid)
+            try
             {
-                // Get current width from parent container
-                double currentWidth = parentGrid.ActualWidth;
+                _dbService.InsertMultipleImages(images);
+                MessageBox.Show($"Успешно добавлено {images.Count} изображений.", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                // Create new clip matching current width
-                var clip = new RectangleGeometry
-                {
-                    RadiusX = 10,
-                    RadiusY = 10,
-                    Rect = new Rect(0, 0, currentWidth, image.ActualHeight)
-                };
-                clip.Freeze();
-                image.Clip = clip;
+                // Перезагружаем изображения, чтобы отобразить новые
+                LoadImagesFromDb();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Произошла ошибка при сохранении изображений в базу данных: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

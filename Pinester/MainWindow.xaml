@@ -13,7 +13,7 @@
             <Setter Property="Background" Value="Black"/>
             <Setter Property="FontFamily" Value="Fira Mono"/>
             <Setter Property="Opacity" Value="0.25"/>
-            <Setter Property="Margin" Value="25"/>
+            <Setter Property="Margin" Value="5"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -70,7 +70,6 @@
             </Setter>
         </Style>
 
-
         <Style TargetType="ScrollBar">
             <Setter Property="Background" Value="Black"/>
             <Setter Property="Opacity" Value="0.4"/>
@@ -96,7 +95,8 @@
 
     <Grid Background="#FF313131">
         <ScrollViewer Style="{StaticResource NormScrollViewerStyle}"
-                      Margin="10">
+                      Margin="10,60,10,10">
+            <!-- Отступ сверху для кнопок -->
             <ItemsControl x:Name="ImageContainer">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -104,36 +104,30 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
 
+                <!-- Шаблон отображает ImageSource из объекта ImageInfo -->
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Margin="0, 5, 0, 0" Width="180" CornerRadius="10" ClipToBounds="True">
-                            <Grid>
-                                <!-- Background for rounded corners -->
-                                <Border Background="#404040" CornerRadius="10"/>
-
-                                <!-- Image with dynamic clipping -->
-                                <Image x:Name="PinterestImage" 
-                       Source="{Binding}" 
-                       Stretch="UniformToFill"
-                       VerticalAlignment="Top"
-                       Loaded="Image_Loaded">
-                                    <Image.Clip>
-                                        <RectangleGeometry x:Name="ImageClip" RadiusX="10" RadiusY="10"/>
-                                    </Image.Clip>
-                                </Image>
-                            </Grid>
+                        <Border Margin="5" Width="180" CornerRadius="10" ClipToBounds="True">
+                            <Image Source="{Binding ImageSource}" Stretch="UniformToFill" />
                         </Border>
-                        </DataTemplate>
+                    </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
-        
-        <Button Content="Add Image" Style="{StaticResource NormButtonStyle}"
-                Command="{Binding ImageTest}" 
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Height="36" Width="111"/>
 
-    <Rectangle Stroke="#FF313131" StrokeThickness="50" RadiusX="50" RadiusY="50" Margin="-40,-40,-178,-40"/>
+        <!-- Панель с кнопками для добавления файлов и папок -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="20,10,0,0">
+            <Button Content="Добавить файлы" Style="{StaticResource NormButtonStyle}"
+                    Command="{Binding AddFilesCommand}" 
+                    Height="36" Width="150"/>
+
+            <Button Content="Добавить папку" Style="{StaticResource NormButtonStyle}"
+                    Command="{Binding AddFolderCommand}"
+                    Height="36" Width="150"/>
+        </StackPanel>
+
+        <Rectangle Stroke="#FF313131" StrokeThickness="50" RadiusX="50" RadiusY="50" Margin="-40,-40,-178,-40"/>
     </Grid>
 </Window>
+    
+    
