@@ -15,7 +15,7 @@ namespace Pinester
     {
         public ICommand UploadImageCommand => new RelayCommand(_ => UploadImage());
         public ICommand LoadImagesCommand => new RelayCommand(_ => LoadImages());
-        public ObservableCollection<BitmapImage> ImageCollection { get; } = new ObservableCollection<BitmapImage>();
+        public ObservableCollection<ImageInfo> ImageCollection { get; } = new ObservableCollection<ImageInfo>();
 
         public MainWindow()
         {
@@ -42,7 +42,14 @@ namespace Pinester
                     var dbService = new DatabaseService();
                     dbService.InsertImage(fileName, imageData);
 
-                    ImageCollection.Add(new BitmapImage(new Uri(filePath)));
+                    // Create ImageInfo object
+                    var imageInfo = new ImageInfo
+                    {
+                        FileName = fileName,
+                        ImageSource = new BitmapImage(new Uri(filePath))
+                    };
+
+                    ImageCollection.Add(imageInfo);
                 }
                 catch (Exception ex)
                 {
@@ -56,11 +63,24 @@ namespace Pinester
             var dbService = new DatabaseService();
             var allImages = dbService.GetAllImages();
 
-            foreach (var image in allImages)
+            if (allImages != null)
             {
-                ImageCollection.Add(image.ImageSource);
+                foreach (var image in allImages)
+                {
+                    ImageCollection.Add(image);
+                }
             }
         }
+
+        private void ImageBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is Border border && border.Tag is ImageInfo imageInfo)
+            {
+                var viewer = new ImageViewer(imageInfo.ImageSource, imageInfo.FileName);
+                viewer.Show();
+            }
+        }
+
 
         private void Image_Loaded(object sender, RoutedEventArgs e)
         {
