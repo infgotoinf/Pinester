@@ -8,6 +8,8 @@ using System.Configuration; // Для App.config
 using System.IO;
 using System.Windows; // Для MessageBox (можно заменить на логирование или проброс исключений)
 using System.Windows.Media.Imaging;
+using Pinester.Models;
+
 
 namespace Pinester.DataBase
 {
@@ -103,6 +105,30 @@ namespace Pinester.DataBase
             {
                 MessageBox.Show($"Error inserting image into database: {ex.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+
+        public DateTime GetPictureInfoDate(ImageInfo imageInfo)
+        {
+            DateTime dt = DateTime.MinValue;
+            try
+            {
+                using (var conn = new NpgsqlConnection(_connectionString))
+                {
+                    conn.Open();
+                    using (var cmd = new NpgsqlCommand($"SELECT uploaded_at from images where id = '{imageInfo.Id}'", conn))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        reader.Read();
+                        dt = reader.GetDateTime(reader.GetOrdinal("uploaded_at"));
+                    }
+                }
+            }
+            catch (Exception ex) 
+            {
+                MessageBox.Show($"Error getting image info from Data Base: {ex.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            return dt;
         }
     }
 }
