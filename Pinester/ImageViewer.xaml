@@ -329,7 +329,6 @@
             </Style.Triggers>
         </Style>
     </Window.Resources>
-    <!--***********************************************************-->
     <Grid>
         <ScrollViewer x:Name="ViewerScroll" 
                       Style="{StaticResource NormScrollViewerStyle}"

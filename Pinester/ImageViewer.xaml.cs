@@ -24,6 +24,10 @@ namespace Pinester
             // Combine file name and additional info
             FileNameText.Text = $"{fileName}\n{additionalInfo}";
 
+            InitializeComponent();
+            FullImage.Source = image;
+            FileNameText.Text = fileName;
+
             // Size window to fit image with proper padding
             double padding = 40;
             double maxWidth = SystemParameters.WorkArea.Width * 0.9;
